@@ -6,7 +6,7 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 - What did the game look like the first time you ran it?
 - List at least two concrete bugs you noticed at the start  
-  (for example: "the secret number kept changing" or "the hints were backwards").
+  (for example: "the hints were backwards").
 
 ---When I started the game, I chose Easy difficulty, and this option says Range 1 to 20, but the instructions says "Guess a number between 1 and 100**,"** so I realized that the difficulty doesn't change the range.
 
@@ -29,9 +29,7 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 ## 4. What did you learn about Streamlit and state?
 
-- In your own words, explain why the secret number kept changing in the original app.
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
-- What change did you make that finally gave the game a stable secret number?
 
 ---
 
