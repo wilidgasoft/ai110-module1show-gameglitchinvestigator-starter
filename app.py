@@ -1,14 +1,18 @@
 import random
 import streamlit as st
+from logic_utils import check_guess
 
+
+# BUG FIX (resolved with Claude Agent mode): Normal and Hard ranges were swapped — Hard had a narrower range (1–50)
+# than Normal (1–100), making Hard easier to guess than Normal. Fixed so difficulty
+# scales correctly: Easy = 1–20, Normal = 1–50, Hard = 1–100.
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
         return 1, 50
-    return 1, 100
+    if difficulty == "Hard":
+        return 1, 100
 
 
 def parse_guess(raw: str):
@@ -29,24 +33,6 @@ def parse_guess(raw: str):
     return True, value, None
 
 
-def check_guess(guess, secret):
-    if guess == secret:
-        return "Win", "🎉 Correct!"
-
-    try:
-        if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
-        else:
-            return "Too Low", "📉 Go LOWER!"
-    except TypeError:
-        g = str(guess)
-        if g == secret:
-            return "Win", "🎉 Correct!"
-        if g > secret:
-            return "Too High", "📈 Go HIGHER!"
-        return "Too Low", "📉 Go LOWER!"
-
-
 def update_score(current_score: int, outcome: str, attempt_number: int):
     if outcome == "Win":
         points = 100 - 10 * (attempt_number + 1)
@@ -63,6 +49,7 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score - 5
 
     return current_score
+
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
@@ -106,8 +93,11 @@ if "history" not in st.session_state:
 
 st.subheader("Make a guess")
 
+# BUG FIX (resolved with Claude Agent mode): Previously hardcoded "1 and 100" regardless of difficulty.
+# Now uses `low` and `high` from get_range_for_difficulty(difficulty)
+# so the message correctly reflects the active range (e.g. 1–20 for Easy).
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
@@ -118,10 +108,7 @@ with st.expander("Developer Debug Info"):
     st.write("Difficulty:", difficulty)
     st.write("History:", st.session_state.history)
 
-raw_guess = st.text_input(
-    "Enter your guess:",
-    key=f"guess_input_{difficulty}"
-)
+raw_guess = st.text_input("Enter your guess:", key=f"guess_input_{difficulty}")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -131,9 +118,13 @@ with col2:
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
+
+# BUG FIX (resolved with Claude Agent mode): Previously, "New Game" always reset the secret using random.randint(1, 100),
+# ignoring the selected difficulty. The fix uses `low` and `high` — already computed above
+# via get_range_for_difficulty(difficulty) — so the new secret respects the correct range.
 if new_game:
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.secret = random.randint(low, high)
     st.success("New game started.")
     st.rerun()
 
@@ -155,6 +146,11 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
+        # FIXME: On even attempts, secret is cast to str before being passed to check_guess.
+        # This was the root cause of the high/low bug — string comparisons are lexicographic,
+        # so e.g. "15" > "8" evaluates to False ("1" < "8"), inverting the hints.
+        # check_guess (now in logic_utils.py) casts both values to int to guard against this,
+        # but the correct long-term fix is to always pass st.session_state.secret as int here.
         if st.session_state.attempts % 2 == 0:
             secret = str(st.session_state.secret)
         else:
