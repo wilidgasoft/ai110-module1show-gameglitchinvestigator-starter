@@ -82,4 +82,11 @@ It wrote the code, ran away, and now the game is unplayable.
 - [x] Challenge 1
       ![alt text](<Screenshot 2026-03-14 at 10.06.29 PM.png>)
 
-- [ ] [If you choose to complete Challenge 4, insert a screenshot of your Enhanced Game UI here]
+- [x] Challenge 2
+      The Agent helps me to implemente, first of all, he created a Todo list with the description of each part after that I accept one by one.
+      ![alt text](<Screenshot 2026-03-14 at 10.45.00 PM.png>)
+- [x] Challenge 3
+      ![alt text](<Screenshot 2026-03-14 at 10.50.40 PM.png>)
+
+- [x] Challenge 4
+      Done.
